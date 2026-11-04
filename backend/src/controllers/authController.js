@@ -3,19 +3,51 @@ const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwt');
 const { pool } = require('../config/db');
 
+// Indian mobile number: optional +91 / 91 / 0 prefix, then 10 digits starting with 6-9
+const PHONE_REGEX = /^(?:\+?91|0)?([6-9]\d{9})$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,99}$/;
+
 // Patient Registration
 const register = async (req, res, next) => {
   try {
-    const { full_name, email, password, phone, role = 'patient' } = req.body;
+    const { full_name, email, password, phone } = req.body;
+    // Public self-registration always creates a patient account.
+    // (Never trust a role sent by the client, or anyone could register as admin.)
+    const role = 'patient';
 
-    if (!full_name || !email || !password) {
+    if (!full_name || !email || !password || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Full name, email, and password are required fields.'
+        message: 'Full name, email, mobile number, and password are required fields.'
       });
     }
 
-    if (password.length < 8) {
+    if (typeof full_name !== 'string' || !NAME_REGEX.test(full_name.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid full name (letters and spaces only).'
+      });
+    }
+
+    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address.'
+      });
+    }
+
+    const phoneMatch = String(phone).replace(/[\s-]/g, '').match(PHONE_REGEX);
+    if (!phoneMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid 10-digit mobile number starting with 6, 7, 8 or 9.'
+      });
+    }
+    // Store in a consistent format: "+91 98765 43210"
+    const cleanPhone = `+91 ${phoneMatch[1].slice(0, 5)} ${phoneMatch[1].slice(5)}`;
+
+    if (typeof password !== 'string' || password.length < 8) {
       return res.status(400).json({
         success: false,
         message: 'Password must contain at least 8 characters.'
@@ -40,7 +72,7 @@ const register = async (req, res, next) => {
     // Insert user
     const [result] = await pool.query(
       'INSERT INTO users (full_name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)',
-      [full_name.trim(), cleanEmail, password_hash, role, phone || null]
+      [full_name.trim(), cleanEmail, password_hash, role, cleanPhone]
     );
 
     const userId = result.insertId;

@@ -14,104 +14,156 @@ import {
   Package,
   Pill,
   FileText,
-  Activity,
+  LineChart,
   HeartHandshake,
   ShieldAlert,
   PhoneCall,
   User,
   ShieldCheck,
-  BriefcaseMedical
+  BriefcaseMedical,
+  Droplets,
+  Sparkles
 } from 'lucide-react';
+
+const sections = [
+  {
+    title: 'Overview',
+    links: [
+      { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { to: '/symptom-checker', label: 'AI Symptom Checker', icon: Stethoscope, badge: 'AI' },
+    ],
+  },
+  {
+    title: 'Care',
+    links: [
+      { to: '/book-appointment', label: 'Book OPD Slot', icon: CalendarPlus },
+      { to: '/appointments', label: 'My Appointments', icon: CalendarCheck },
+      { to: '/hospitals', label: 'Hospitals & Map', icon: Building2 },
+      { to: '/doctors', label: 'Doctor Directory', icon: UserCheck },
+      { to: '/video-consult', label: 'Video Teleconsult', icon: Video },
+    ],
+  },
+  {
+    title: 'Diagnostics',
+    links: [
+      { to: '/lab-tests', label: 'Lab Tests', icon: TestTube },
+      { to: '/scans', label: 'Scans & Imaging', icon: Scan },
+      { to: '/health-packages', label: 'Health Packages', icon: Package },
+    ],
+  },
+  {
+    title: 'My Health',
+    links: [
+      { to: '/prescriptions', label: 'Medicines & Reminders', icon: Pill },
+      { to: '/medical-records', label: 'Medical Records', icon: FileText },
+      { to: '/vitals', label: 'Vitals & BMI', icon: LineChart },
+      { to: '/profile', label: 'Health Profile', icon: User },
+    ],
+  },
+  {
+    title: 'Emergency',
+    links: [
+      { to: '/emergency', label: 'Emergency SOS Hub', icon: ShieldAlert, badge: 'SOS' },
+      { to: '/first-aid', label: 'First Aid Guides', icon: HeartHandshake },
+      { to: '/blood-bank', label: 'Blood Banks & Donors', icon: Droplets },
+      { to: '/helplines', label: '24/7 Helplines', icon: PhoneCall },
+    ],
+  },
+];
+
+const badgeStyles = {
+  SOS: 'bg-rose-100 text-rose-700',
+  AI: 'bg-gradient-to-r from-teal-100 to-indigo-100 text-indigo-700',
+  Admin: 'bg-purple-100 text-purple-700',
+  Doctor: 'bg-blue-100 text-blue-700',
+};
 
 export default function Sidebar() {
   const { user } = useAuth();
 
-  const links = [
-    { to: '/dashboard', label: 'Patient Dashboard', icon: LayoutDashboard },
-    { to: '/symptom-checker', label: 'AI Symptom Checker', icon: Stethoscope },
-    { to: '/book-appointment', label: 'Book OPD Slot', icon: CalendarPlus },
-    { to: '/appointments', label: 'My Appointments', icon: CalendarCheck },
-    { to: '/hospitals', label: 'Hospitals & Map', icon: Building2 },
-    { to: '/doctors', label: 'Doctor Directory', icon: UserCheck },
-    { to: '/video-consult', label: 'Video Teleconsult', icon: Video },
-    { to: '/lab-tests', label: 'Diagnostic Lab Tests', icon: TestTube },
-    { to: '/scans', label: 'Scans & Imaging', icon: Scan },
-    { to: '/health-packages', label: 'Health Packages', icon: Package },
-    { to: '/prescriptions', label: 'Medicine & Reminders', icon: Pill },
-    { to: '/medical-records', label: 'Electronic Records', icon: FileText },
-    { to: '/vitals', label: 'Vitals & BMI History', icon: Activity },
-    { to: '/first-aid', label: 'Emergency First Aid', icon: HeartHandshake },
-    { to: '/emergency', label: 'Emergency SOS Hub', icon: ShieldAlert, badge: 'SOS' },
-    { to: '/blood-bank', label: 'Blood Banks & Donors', icon: Activity },
-    { to: '/helplines', label: '24/7 Helplines', icon: PhoneCall },
-    { to: '/profile', label: 'Patient Profile', icon: User },
-  ];
-
+  const navSections = [...sections];
   if (user?.role === 'doctor') {
-    links.push({ to: '/doctor-portal', label: 'Doctor Clinical Desk', icon: BriefcaseMedical, badge: 'Doctor' });
+    navSections.unshift({
+      title: 'Clinical',
+      links: [{ to: '/doctor-portal', label: 'Doctor Clinical Desk', icon: BriefcaseMedical, badge: 'Doctor' }],
+    });
   }
-
   if (user?.role === 'admin') {
-    links.push({ to: '/admin', label: 'Admin Management', icon: ShieldCheck, badge: 'Admin' });
+    navSections.unshift({
+      title: 'Administration',
+      links: [{ to: '/admin', label: 'Admin Management', icon: ShieldCheck, badge: 'Admin' }],
+    });
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 min-h-[calc(100vh-4rem)] p-4 flex flex-col justify-between hidden lg:flex shrink-0">
-      <div className="space-y-1">
-        <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          Healthcare Navigation
-        </div>
-
-        <nav className="space-y-0.5">
-          {links.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-teal-50 text-[#087f8c] font-semibold border-r-2 border-[#087f8c]'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`
-                }
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <Icon className="w-4 h-4 shrink-0 text-[#087f8c]" />
-                  <span className="truncate">{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                    item.badge === 'SOS' 
-                      ? 'bg-red-100 text-red-700' 
-                      : item.badge === 'Admin'
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </NavLink>
-            );
-          })}
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col pt-6 pb-6 pl-4 pr-2">
+      <div className="sticky top-[5.5rem] flex flex-col max-h-[calc(100vh-7rem)] rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-soft overflow-hidden">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+          {navSections.map((section) => (
+            <div key={section.title}>
+              <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                {section.title}
+              </p>
+              <div className="space-y-0.5">
+                {section.links.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `group flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
+                          isActive
+                            ? 'bg-gradient-to-r from-[#087f8c] to-[#0aa2b0] text-white shadow-glow'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <span className="flex items-center gap-2.5 truncate">
+                            <Icon
+                              className={`w-4 h-4 shrink-0 transition-colors ${
+                                isActive ? 'text-white' : 'text-slate-400 group-hover:text-[#087f8c]'
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </span>
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded-md ${
+                                isActive ? 'bg-white/25 text-white' : badgeStyles[item.badge]
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
-      </div>
 
-      {/* User Mini Summary */}
-      {user && (
-        <div className="pt-4 border-t border-slate-200 mt-4 px-2">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-teal-100 text-[#087f8c] font-bold flex items-center justify-center text-sm">
-              {user.full_name?.charAt(0) || 'U'}
-            </div>
-            <div className="truncate">
-              <p className="text-xs font-bold text-slate-800 truncate">{user.full_name}</p>
-              <p className="text-[11px] text-slate-500 capitalize">{user.role}</p>
-            </div>
+        {/* Upgrade / help card */}
+        <div className="p-3 border-t border-slate-100">
+          <div className="relative overflow-hidden rounded-xl p-3.5 bg-gradient-to-br from-[#087f8c] via-[#0aa2b0] to-indigo-500 text-white">
+            <div className="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/15"></div>
+            <Sparkles className="w-4 h-4 mb-1.5" />
+            <p className="text-xs font-bold">Not feeling well?</p>
+            <p className="text-[11px] text-white/80 mt-0.5 leading-snug">Get an instant AI symptom assessment.</p>
+            <NavLink
+              to="/symptom-checker"
+              className="mt-2.5 inline-flex items-center justify-center w-full text-[11px] font-bold bg-white text-[#087f8c] rounded-lg py-1.5 hover:bg-teal-50 transition-colors"
+            >
+              Check Symptoms
+            </NavLink>
           </div>
         </div>
-      )}
+      </div>
     </aside>
   );
 }

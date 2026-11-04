@@ -48,12 +48,7 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
     if (res.data.success) {
-      const receivedToken = res.data.token;
-      const receivedUser = res.data.user;
-      localStorage.setItem('healthai_token', receivedToken);
-      localStorage.setItem('healthai_user', JSON.stringify(receivedUser));
-      setToken(receivedToken);
-      setUser(receivedUser);
+      // Do NOT auto-login after registration: the user signs in on the Login page
       return res.data;
     }
     throw new Error(res.data.message || 'Registration failed');

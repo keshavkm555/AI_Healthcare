@@ -19,7 +19,9 @@ import {
   Circle,
   ChevronRight,
   PlusCircle,
-  Building2
+  Building2,
+  Stethoscope,
+  Droplet
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -64,9 +66,17 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <div className="w-10 h-10 border-4 border-[#087f8c] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm font-semibold text-slate-600">Loading your personalized health dashboard...</p>
+      <div className="space-y-6">
+        <div className="h-44 rounded-3xl bg-slate-200/70 animate-pulse"></div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-28 rounded-2xl bg-slate-200/60 animate-pulse"></div>
+          ))}
+        </div>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="h-64 rounded-2xl bg-slate-200/60 animate-pulse"></div>
+          <div className="h-64 rounded-2xl bg-slate-200/60 animate-pulse"></div>
+        </div>
       </div>
     );
   }
@@ -93,102 +103,122 @@ export default function DashboardPage() {
     followUpReminders = []
   } = dashboardData || {};
 
+  const completion = Math.min(100, Number(profile?.profile_completed_percentage) || 25);
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const todayLabel = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8">
       
-      {/* Top Welcome Bar & Emergency SOS */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800">
-            Welcome back, <span className="text-[#087f8c]">{user?.full_name || 'Patient'}</span>! 👋
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Registered Email: {user?.email} • Health Profile Completion: {profile?.profile_completed_percentage || 25}%
-          </p>
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#04363d] via-[#087f8c] to-indigo-600 text-white p-6 sm:p-8 shadow-[0_30px_60px_-30px_rgba(8,127,140,0.6)]">
+        <div className="pointer-events-none absolute -top-20 -right-16 w-72 h-72 rounded-full bg-cyan-300/20 blur-3xl"></div>
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 w-72 h-72 rounded-full bg-indigo-400/25 blur-3xl"></div>
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '22px 22px' }}
+        ></div>
+
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 border border-white/25 backdrop-blur flex items-center justify-center text-xl sm:text-2xl font-extrabold shrink-0">
+              {(user?.full_name || 'P').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm text-white/70 font-semibold">{greeting} 👋</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">
+                {user?.full_name || 'Patient'}
+              </h1>
+              <p className="text-xs sm:text-sm text-white/70 mt-1">
+                {user?.email} · {todayLabel}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Link
+              to="/book-appointment"
+              className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-white text-[#087f8c] font-bold text-sm px-5 py-3 rounded-xl shadow-lg hover:-translate-y-0.5 transition-all"
+            >
+              <Calendar className="w-4 h-4" />
+              Book Appointment
+            </Link>
+            <Link
+              to="/emergency"
+              className="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 bg-rose-500/90 hover:bg-rose-500 border border-rose-300/40 text-white font-bold text-sm px-5 py-3 rounded-xl transition-all"
+            >
+              <ShieldAlert className="w-4 h-4" />
+              SOS
+            </Link>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Link
-            to="/book-appointment"
-            className="btn-primary text-xs sm:text-sm py-2 px-4 shadow-xs flex-1 sm:flex-initial"
-          >
-            <Calendar className="w-4 h-4" />
-            Book OPD Slot
-          </Link>
-          <Link
-            to="/emergency"
-            className="btn-danger text-xs sm:text-sm py-2 px-4 shadow-xs flex-1 sm:flex-initial"
-          >
-            <ShieldAlert className="w-4 h-4" />
-            Emergency SOS
-          </Link>
+        {/* Profile completion */}
+        <div className="relative mt-6 flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-2xl bg-white/10 border border-white/15 backdrop-blur">
+          <div className="flex-1">
+            <div className="flex items-center justify-between text-xs font-semibold mb-2">
+              <span className="text-white/80">Health profile completion</span>
+              <span className="font-extrabold">{completion}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-200 to-emerald-200 transition-all duration-700"
+                style={{ width: `${completion}%` }}
+              ></div>
+            </div>
+          </div>
+          {completion < 100 && (
+            <Link to="/profile" className="text-xs font-bold bg-white/15 hover:bg-white/25 px-4 py-2 rounded-lg transition-colors text-center">
+              Complete profile →
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Patient Health Overview Cards & Completion Progress */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Blood Group & BMI */}
-        <div className="card-health bg-gradient-to-br from-teal-50 to-white border-teal-100">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">Blood Group</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-teal-200/60 font-bold text-teal-900">
-              {profile?.blood_group || 'Not set'}
-            </span>
+      {/* Health Overview Stat Tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Blood Group',
+            value: profile?.blood_group || '—',
+            sub: `Age ${profile?.age ? `${profile.age} yrs` : '—'} · ${profile?.gender || '—'}`,
+            icon: Droplet,
+            tile: 'from-rose-500 to-pink-500',
+          },
+          {
+            label: 'Body Mass Index',
+            value: profile?.bmi || '—',
+            sub: profile?.bmi_category || 'Not calculated',
+            icon: Activity,
+            tile: 'from-emerald-500 to-teal-500',
+          },
+          {
+            label: 'Upcoming Visits',
+            value: upcomingAppointments.length,
+            sub: `${stats.total_appointments || 0} total appointments`,
+            icon: Calendar,
+            tile: 'from-[#087f8c] to-cyan-500',
+          },
+          {
+            label: 'Prescriptions',
+            value: stats.total_prescriptions || 0,
+            sub: `${stats.total_records || 0} medical records`,
+            icon: Pill,
+            tile: 'from-indigo-500 to-violet-500',
+          },
+        ].map(({ label, value, sub, icon: Icon, tile }) => (
+          <div key={label} className="card-health !p-5 hover:-translate-y-1 group">
+            <div className="flex items-start justify-between">
+              <p className="text-xs font-bold text-slate-500">{label}</p>
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tile} text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                <Icon className="w-5 h-5" />
+              </div>
+            </div>
+            <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">{value}</p>
+            <p className="text-xs text-slate-500 mt-1 truncate">{sub}</p>
           </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-slate-800">{profile?.blood_group || '—'}</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Age: {profile?.age ? `${profile.age} yrs` : '—'} • {profile?.gender || '—'}
-            </p>
-          </div>
-        </div>
-
-        {/* BMI & Weight */}
-        <div className="card-health">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Body Mass Index</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 font-semibold text-slate-700">
-              {profile?.bmi_category || 'Normal'}
-            </span>
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-slate-800">{profile?.bmi ? `${profile.bmi} kg/m²` : '23.3'}</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Height: {profile?.height_cm || 175} cm • Weight: {profile?.weight_kg || 71.5} kg
-            </p>
-          </div>
-        </div>
-
-        {/* Active Appointments */}
-        <div className="card-health">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Upcoming Visits</span>
-            <Calendar className="w-4 h-4 text-teal-600" />
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-slate-800">{upcomingAppointments.length}</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Total Recorded: {stats.total_appointments || 0}
-            </p>
-          </div>
-        </div>
-
-        {/* Profile Completion Bar */}
-        <div className="card-health">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profile Status</span>
-            <span className="text-xs font-bold text-[#087f8c]">{profile?.profile_completed_percentage || 25}%</span>
-          </div>
-          <div className="w-full bg-slate-100 h-2.5 rounded-full mt-3 overflow-hidden">
-            <div
-              className="bg-[#087f8c] h-full rounded-full transition-all duration-500"
-              style={{ width: `${profile?.profile_completed_percentage || 25}%` }}
-            ></div>
-          </div>
-          <Link to="/profile" className="text-[11px] font-bold text-[#087f8c] hover:underline block mt-2">
-            Update Medical Details →
-          </Link>
-        </div>
+        ))}
       </div>
 
       {/* Main Row: Upcoming Appointments & Today's Medicines Tracker */}
