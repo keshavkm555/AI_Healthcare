@@ -1,0 +1,25 @@
+{
+  "name": "ai-healthcare-assistant",
+  "version": "1.0.0",
+  "description": "Full-Stack AI Healthcare Assistant Web Application",
+  "scripts": {
+    "setup": "powershell -ExecutionPolicy Bypass -File .\\setup-new-laptop.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -File .\\start-all.ps1",
+    "start:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed",
+    "users": "cd backend && npm run users",
+    "test": "cd backend && node src/tests/test_api.js",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "healthcare",
+    "ai",
+    "react",
+    "express",
+    "mysql",
+    "full-stack"
+  ],
+  "author": "Chandan G P",
+  "license": "ISC"
+}
